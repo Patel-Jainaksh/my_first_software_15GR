@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | Manage Cameras</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dependency/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dependency/icon.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dependency/dataTables.dataTables.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/index.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/cameras.css') }}">
+</head>
+
+<body>
+  <div class="main-content">
+    <div class="left-side">
+      <div class="small-sidebar">
+        <div class="p-0">
+          <div class="p-3 text-center">
+            <img src="{{ url_for('static', filename='images/IA_logo.png') }}" 
+                 alt="Indian Army Logo" 
+                 style="height: 50px; object-fit: contain;" />
+          </div>
+        </div>
+        <div class="m-0 p-0">
+          <ul class="flex-column nav nav-flush nav-pills text-center mb-auto">
+            <li class="nav-item">
+              <a href="/admin" class="nav-link text-dark" aria-current="page">
+                <div class="d-flex align-items-center justify-content-center">
+                  <span class="material-icons">dashboard</span>
+                </div>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/admin/cameras" class="nav-link active" aria-current="page">
+                <div class="d-flex align-items-center justify-content-center">
+                  <span class="material-icons">videocam</span>
+                </div>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/admin/recordings" class="nav-link text-dark" aria-current="page">
+                <div class="d-flex align-items-center justify-content-center">
+                  <span class="material-icons">radio_button_checked</span>
+                </div>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/admin/log" class="nav-link text-dark" aria-current="page">
+                <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">list</span>
+                </div>
+            </a>
+            </li>
+            <li class="nav-item">
+              <a href="/logout" class="nav-link text-dark" aria-current="page">
+                <div class="d-flex align-items-center justify-content-center">
+                  <span class="material-icons">logout</span>
+                </div>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="d-flex justify-content-center align-items-center flex-column pb-2">
+          <!-- <span class="fw-bolder  text-center" style="font-size: 0.75rem;">Developed By </span> -->
+          <img src="{{ url_for('static', filename='images/MIPL_LOGO.png') }}" style="height:35px;width:47.5px" alt="">
+          </div>
+      </div>
+    </div>
+    <div class="right-side">
+      <div class="flex-column p-2 content px-2">
+        <div class="p-2 cust-card pb-0" style="height: 100vh;">
+          <div class="d-flex align-items-center justify-content-between">
+            <h3>NVR </h3>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdropNVRModel">
+              Add NVR
+            </button>
+          </div>
+          <hr>
+          <div class="container-fluid">
+            <div class="d-flex justify-content-center align-items-center">
+              <select class="form-select" aria-label="Default select example" id="select-nvr-list" >
+                <option selected value="none">Select NVR</option>
+              </select>
+              <div class="d-flex justify-content-center align-items-center ms-2">
+                <button class="btn btn-primary me-2" id="edit-nvr-button" onclick="editNvr()"data-bs-toggle="modal" data-bs-target="#staticBackdropNVRModel">Edit</button>
+                <button class="btn delete-button" id="edit-nvr-button" onclick="deleteNvr()">Delete</button>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <div class=" justify-content-center align-items-center" id="for-not-selected-nvr" style="height: 600px;display: none;">
+            <h4>No NVR Found !</h4>
+          </div>
+          <div id="manage-camera-area">
+            <div class="d-flex justify-content-between align-items-center">
+              <h3>Cameras </h3>
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdropCamera" onclick="showAddCameraModel()">
+                Add Camera
+              </button>
+            </div>
+            <div class="d-flex justify-content-center camera-table" style="width: 100%;">
+              <div class="table-responsive" style="width: 100%;">
+                <table id="mytable" class="display" style="width:100% !important">
+                  <thead>
+                    <tr>
+                      <td>Sr.No</td>
+                      <td>Camera Id</td>
+                      <td>Area Name</td>
+                      <td>Status</td>
+                      <td>Action</td>
+                    </tr>
+                  </thead>
+                  <tbody>  
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <!-- Add NVR Model -->
+<div class="modal fade" id="staticBackdropNVRModel" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="nvr-model-title">Add NVR</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="resetNVRForm()"></button>
+      </div>
+      <div class="modal-body">
+        <label for="basic-url" class="form-label">NVR URL</label>
+        <form id="add-nvr-form">
+          <input type="hidden" id="nvr-id">
+          <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon3">rtsp://</span>
+            <input type="text" class="form-control" id="nvr-url" aria-describedby="basic-addon3">
+          </div>
+          <div class="mb-3">
+            <label for="nvr-area-name" class="form-label">Area Name</label>
+            <input type="text" id="nvr-area-name" class="form-control" placeholder="Area-01">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="add-nvr-close-btn" onclick="resetNVRForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="nvr-model-submit-btn">Add NVR</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Add Camer Model -->
+<div class="modal fade " id="staticBackdropCamera" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5"  id="cam-model-title">Add Camera</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="add-camera-close-btn" onclick="resetCameraForm()"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-camera-form">
+          <input type="hidden" id="camera-id">
+          <input type="hidden" id="add-camera-nvr-id">
+          <div class="mb-3">
+            <label for="nvr-area-name" class="form-label">Area Name</label>
+            <input type="text" disabled id="add-camera-nvr-area-name" class="form-control" placeholder="Area-01">
+          </div>
+          <div class="mb-3">
+            <label for="nvr-area-name" class="form-label">Camera ID</label>
+            <input type="text" id="add-camera-id" class="form-control" placeholder="Channel / Camera ID">
+          </div>
+          <label for="basic-url" class="form-label">camera URL</label>
+          <div class="input-group mb-3">
+            <span class="input-group-text" id="add-camera-nvr-url">rtsp://</span>
+            <input type="text" class="form-control" id="add-camera-further-url" aria-describedby="basic-addon3" placeholder="101">
+          </div>
+          <div class="mb-3">
+            <label for="nvr-area-name" class="form-label">Camera Description</label>
+            <textarea type="text"  id="add-camera-description" class="form-control" placeholder="Location Description / Camera Description"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"  onclick="resetCameraForm()">Close</button>
+          <button type="submit" class="btn btn-primary" id="camera-model-submit-btn" >Add Camera</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Global Loading Spinner -->
+<div id="global-loader" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+     background: rgba(255, 255, 255, 0.6); z-index: 9999; justify-content: center; align-items: center;">
+  <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+ <!-- Toast Container -->
+ <div
+ id="toast-container"
+ style="
+   position: fixed;
+   top: 20px;
+   right: 20px;
+   z-index: 900000;
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+ "
+></div>
+<!-- <div style="position:fixed;bottom:10px;right:10px;background-color:rgba(17, 30, 78, 0.5);padding:5px;border-radius:5px;color:#fff"><span class=" " >Developed by MIPL</span></div> -->
+
+<script src="{{ url_for('static', filename='js/dependency/socket.io.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dependency/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dependency/jquery-3.7.1.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dependency/dataTables.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin/camera.js') }}"></script>
+</body>
+
+</html>

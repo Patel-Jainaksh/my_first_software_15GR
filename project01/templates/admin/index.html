@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/bootstrap.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/icon.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/dataTables.dataTables.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/admin/index.css') }}"
+    />
+  </head>
+  <body>
+    <div class="main-content">
+      <div class="left-side">
+        <div class="small-sidebar">
+          <div class="p-0">
+            <div class="p-3 text-center">
+              <img
+                src="{{ url_for('static', filename='images/IA_logo.png') }}"
+                alt="Indian Army Logo"
+                style="height: 50px; object-fit: contain"
+              />
+            </div>
+          </div>
+          <div class="m-0 p-0">
+            <ul class="flex-column nav nav-flush nav-pills text-center mb-auto">
+              <li class="nav-item">
+                <a href="/admin" class="nav-link active" aria-current="page">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">dashboard</span>
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/admin/cameras"
+                  class="nav-link text-dark"
+                  aria-current="page"
+                >
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">videocam</span>
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/admin/recordings"
+                  class="nav-link text-dark"
+                  aria-current="page"
+                >
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">radio_button_checked</span>
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/admin/log"
+                  class="nav-link text-dark"
+                  aria-current="page"
+                >
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">list</span>
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/logout"
+                  class="nav-link text-dark"
+                  aria-current="page"
+                >
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">logout</span>
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div
+            class="d-flex justify-content-center align-items-center flex-column pb-2"
+          >
+            <!-- <span class="fw-bolder  text-center" style="font-size: 0.75rem;">Developed By </span> -->
+            <img
+              src="{{ url_for('static', filename='images/MIPL_LOGO.png') }}"
+              style="height: 35px; width: 47.5px"
+              alt=""
+            />
+          </div>
+        </div>
+      </div>
+      <div class="right-side">
+        <div class="p-2 content px-2">
+          <div
+            class="p-2 cust-card live-feed pb-0 camera-view"
+            style="height: 95% !important"
+          >
+            <div class="d-flex align-items-start justify-content-between">
+              <div
+                class="d-flex justify-content-center align-items-center w-25"
+              >
+                <select name="" class="form-select" id="model-select">
+                  <option value="none">No Detection Mode</option>
+                  <option value="human">Detection Mode</option>
+                  <option value="depth">Depth Mode</option>
+                  <option value="AOS">AOS Mode</option>
+                </select>
+                <div class="form-check form-switch ms-4 w-100">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="frame_enhancer_switch"
+                    checked
+                  />
+                  <label
+                    class="form-check-label w-70"
+                    for="flexSwitchCheckChecked"
+                    >Frame Optimiser</label
+                  >
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Grid Buttons Group -->
+                <div class="btn-group" role="group">
+                  <button
+                    class="grid-buttons btn btn-secondary"
+                    onclick="setGrid(1,this)"
+                    title="1 X 1 Grid View"
+                  >
+                    <span class="fw-1 material-icons">view_agenda</span>
+                  </button>
+                  <button
+                    class="grid-buttons btn btn-secondary"
+                    onclick="setGrid(2,this)"
+                    title="2 X 2 Grid View"
+                  >
+                    <span class="fw-1 material-icons">grid_view</span>
+                  </button>
+                  <button
+                    class="grid-buttons btn btn-primary"
+                    onclick="setGrid(3,this)"
+                    title="4 X 4 Grid View"
+                  >
+                    <span class="fw-1 material-icons">view_module</span>
+                  </button>
+                  <button
+                    class="grid-buttons btn btn-secondary"
+                    onclick="setGrid(4,this)"
+                    title="6 X 6 Grid View"
+                  >
+                    <span class="fw-1 material-icons">view_comfy</span>
+                  </button>
+                </div>
+
+                <!-- Redirect Button -->
+                <div class="btn-group" role="group" title="Alert View">
+                  <a
+                    href="/admin/index"
+                    class="grid-buttons btn btn-secondary"
+                    onclick="setGrid(1,this)"
+                  >
+                    <span class="fw-1 material-icons">view_quilt</span>
+                  </a>
+                </div>
+
+                <!-- Expand Button -->
+                <div
+                  id="expand-camera-list"
+                  class="btn-group"
+                  role="group"
+                  style="display: none"
+                  title="Expand Camera list"
+                >
+                  <button
+                    class="grid-buttons btn btn-secondary"
+                    title="Expand Camera list"
+                  >
+                    <span class="material-icons">list</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <hr />
+            <div class="camera-feed-scrollable">
+              <div class="container-fluid">
+                <div class="">
+                  <div class="g-2 row" id="cameraContainer">
+                    <div
+                      class="col-12"
+                      style="
+                        height: 600px;
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                      "
+                    >
+                      <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="camera-list">
+            <div class="d-flex align-items=-center justify-content-between m-2">
+              <h2 class="">Cameras</h2>
+              <span
+                id="close-camera-list"
+                class="material-icons"
+                title="Collapse Camera List"
+              >
+                close
+              </span>
+            </div>
+            <hr class="m-2" />
+            <div class="p-2 camera-list-scrollable">
+              <ul class="list-group" id="cameraListContainer">
+                <div
+                  style="
+                    height: 600px;
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                  "
+                >
+                  <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div
+      id="toast-container"
+      style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 3000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      "
+    ></div>
+
+    <!-- Log Area -->
+    <div id="liveLogPanel" class="log-panel shadow-sm border rounded-top p-0">
+      <!-- 🔼 Resize handle -->
+      <div id="logResizeHandle" class="log-resize-handle"></div>
+
+      <!-- Header -->
+      <div
+        class="log-panel-header d-flex justify-content-between align-items-center px-2 py-1 border-bottom bg-light"
+      >
+        <span class="fw-bold">📋 Live Logs</span>
+        <span id="toggleLogPanelBtn" class="material-icons">
+          keyboard_arrow_down
+        </span>
+      </div>
+
+      <!-- Bootstrap styled list -->
+      <ul id="live-log-list" class="list-group list-group-flush small"></ul>
+    </div>
+
+    <!-- Camera Preview Modal -->
+    <div id="cameraPreviewModal" class="modal" style="display: none">
+      <div class="modal-content" style="position: relative">
+        <span
+          id="closePreviewBtn"
+          class="material-icons close-btn"
+          style="
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 1001;
+          "
+          >close</span
+        >
+
+        <div
+          id="previewContent"
+          style="
+            width: 100%;
+            height: calc(100vh);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: black;
+          "
+        >
+          <img
+            class="previewImageClass"
+            id="previewImage"
+            src=""
+            style="max-width: 100%; max-height: 100%"
+          />
+        </div>
+      </div>
+    </div>
+    <!-- <div style="position:fixed;bottom:10px;left:10px;background-color:rgba(17, 30, 78, 0.5);padding:5px;border-radius:5px;color:#fff;z-index:8000"><span class=" " >Developed by MIPL</span></div> -->
+
+    <script src="{{ url_for('static', filename='js/dependency/socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/jquery-3.7.1.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/dataTables.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin/index.js') }}"></script>
+  </body>
+</html>

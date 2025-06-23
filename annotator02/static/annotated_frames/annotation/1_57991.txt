@@ -1,0 +1,4 @@
+chimpanzee 293 145 62 93
+chimpanzee 356 67 270 292
+chimpanzee 211 220 87 132
+chimpanzee 375 227 42 75

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/ai_model/rtdetr_v2_r18vd" vcs="Git" />
+  </component>
+</project>

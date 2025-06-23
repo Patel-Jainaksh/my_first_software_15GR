@@ -1,0 +1,4 @@
+{
+    "animalModelPath": "modelRepository/dino-animal-classifer/default",
+    "humanModelPath": "modelRepository/rtdetr-v2-r18d-person-detection/default"
+}

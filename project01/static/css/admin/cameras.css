@@ -1,0 +1,26 @@
+.camera-table{
+  width: 100%;
+}
+
+.update-button{
+  background-color: black;  color: white;
+  font-size: 1rem !important;
+}
+
+.delete-button{
+  background-color: rgb(252, 56, 56);
+  color: white;
+  font-size: 1rem !important;
+}
+
+.update-button:hover{
+  background-color: rgb(30, 30, 30);  color: white;
+  font-size: 1rem !important;
+}
+
+.delete-button:hover{
+  background-color: rgb(247, 74, 74);
+  color: white;
+  font-size: 1rem !important;
+}
+

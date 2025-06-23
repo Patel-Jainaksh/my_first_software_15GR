@@ -1,0 +1,11 @@
+
+//This is to create the .exe file using pyinstaller
+pyinstaller --onefile --noconsole launcher.py --name=ai_vigi_setup
+
+
+//This is to download all the offline_packages inside the offline packages folder 
+pip download -r requirements.txt --only-binary=:all: --python-version 3.12.0 --platform win_amd64 --abi cp312 --implementation cp --dest offline_packages
+postgresql-17.4-1-windows-x64
+
+
+DESKTOP-T6GMP8O

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | Logs</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/bootstrap.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/icon.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/dataTables.dataTables.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/admin/index.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/admin/cameras.css') }}"
+    />
+  </head>
+  <body>
+    <div class="main-content">
+      <div class="left-side">
+        <div class="small-sidebar">
+          <div class="p-0">
+            <div class="p-3 text-center">
+              <img src="{{ url_for('static', filename='images/IA_logo.png') }}" 
+                   alt="Indian Army Logo" 
+                   style="height: 50px; object-fit: contain;" />
+            </div>
+          </div>
+          <div class="m-0 p-0">
+            <ul class="flex-column nav nav-flush nav-pills text-center mb-auto">
+              <li class="nav-item">
+                <a href="/admin" class="nav-link text-dark" aria-current="page">
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">dashboard</span>
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/admin/cameras"
+                  class="nav-link text-dark"
+                  aria-current="page"
+                >
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">videocam</span>
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/admin/recordings"
+                  class="nav-link text-dark"
+                  aria-current="page"
+                >
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">radio_button_checked</span>
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/admin/log"
+                  class="nav-link active"
+                  aria-current="page"
+                >
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">list</span>
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="/logout"
+                  class="nav-link text-dark"
+                  aria-current="page"
+                >
+                  <div class="d-flex align-items-center justify-content-center">
+                    <span class="material-icons">logout</span>
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="d-flex justify-content-center align-items-center flex-column pb-2">
+            <!-- <span class="fw-bolder  text-center" style="font-size: 0.75rem;">Developed By </span> -->
+            <img src="{{ url_for('static', filename='images/MIPL_LOGO.png') }}" style="height:35px;width:47.5px" alt="">
+            </div>
+        </div>
+      </div>
+      <div class="right-side">
+        <div class="flex-column p-2 content px-2">
+          <div class="p-2 cust-card pb-0" style="">
+            <div><h1>Logs</h1></div>
+            <hr />
+            <div class="d-flex gap-2 mb-3">
+              <select id="nvr-select" class="form-select" style="width: 200px">
+                <option value="">Select NVR</option>
+              </select>
+
+              <select
+                id="camera-select"
+                class="form-select"
+                style="width: 200px"
+              >
+                <option value="">Select Camera</option>
+              </select>
+
+              <input type="date" id="start-date" class="form-control" />
+              <input type="date" id="end-date" class="form-control" />
+              <button class="btn btn-primary" onclick="reloadLogs()">
+                Apply
+              </button>
+              <button
+                class="btn btn-outline-dark ms-2"
+                onclick="resetFilters()"
+              >
+                Reset
+              </button>
+            </div>
+            <div class="p-2">
+              <div id="log-list">
+                <ul id="log-items" class="list-group">
+                  <!-- JS will append items here -->
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+<!-- <div style="position:fixed;bottom:10px;right:10px;background-color:rgba(17, 30, 78, 0.5);padding:5px;border-radius:5px;color:#fff"><span class=" " >Developed by MIPL</span></div> -->
+
+    <script src="{{ url_for('static', filename='js/dependency/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/jquery-3.7.1.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/dataTables.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin/logs.js') }}"></script>
+  </body>
+</html>

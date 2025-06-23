@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Recordings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dependency/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dependency/icon.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dependency/dataTables.dataTables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/recordings.css') }}">
+</head>
+
+<body>
+<div class="main-content">
+    <div class="left-side">
+        <div class="small-sidebar">
+            <div class="p-0">
+              <div class="p-3 text-center">
+                <img src="{{ url_for('static', filename='images/IA_logo.png') }}" 
+                     alt="Indian Army Logo" 
+                     style="height: 50px; object-fit: contain;" />
+              </div>
+            </div>
+            <div class="m-0 p-0">
+                <ul class="flex-column nav nav-flush nav-pills text-center mb-auto">
+                    <li class="nav-item">
+                        <a href="/admin" class="nav-link text-dark" aria-current="page">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <span class="material-icons">dashboard</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/cameras" class="nav-link text-dark" aria-current="page">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <span class="material-icons">videocam</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/recordings" class="nav-link active" aria-current="page">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <span class="material-icons">radio_button_checked</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/admin/log" class="nav-link text-dark" aria-current="page">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <span class="material-icons">list</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/logout" class="nav-link text-dark" aria-current="page">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <span class="material-icons">logout</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="d-flex justify-content-center align-items-center flex-column pb-2">
+              <!-- <span class="fw-bolder  text-center" style="font-size: 0.75rem;">Developed By </span> -->
+              <img src="{{ url_for('static', filename='images/MIPL_LOGO.png') }}" style="height:35px;width:47.5px" alt="">
+              </div>
+        </div>
+    </div>
+    <div class="right-side">
+        <div class="flex-column p-2 content px-2">
+            <div class="p-2 cust-card pb-0">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h2>Recordings</h2>
+                </div>
+                <hr>
+                <form id="recordingFilters" class="row g-3 mb-3">
+                    <div class="col-md-3">
+                      <label for="nvrSelect" class="form-label">Select NVR</label>
+                      <select id="nvrSelect" class="form-select">
+                        <option value="all">All NVRs</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <label for="cameraSelect" class="form-label">Select Camera</label>
+                      <select id="cameraSelect" class="form-select">
+                        <option value="all">All Cameras</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <label for="startDate" class="form-label">Start Date</label>
+                      <input type="date" class="form-control" id="startDate">
+                    </div>
+                    <div class="col-md-3">
+                      <label for="endDate" class="form-label">End Date</label>
+                      <input type="date" class="form-control" id="endDate">
+                    </div>
+                    <div class="col-md-12 d-flex justify-content-end">
+                      <button type="button" class="btn btn-primary me-2" onclick="applyFilters()">Apply</button>
+                      <button type="button" class="btn btn-outline-dark" onclick="resetFilters()">Reset</button>
+                    </div>
+                    
+                  </form>
+                  
+                <div id="recordingsContainer" class="" style="width: 100%;">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal for Video Preview -->
+<div class="modal fade" id="videoPreviewModal" tabindex="-1" aria-labelledby="videoPreviewModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Video Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <video id="previewVideo" controls width="100%" preload="metadata"></video>
+              
+                <div class="mt-3 text-start">
+                    <table class="table table-bordered table-striped">
+                      <tbody>
+                        <tr>
+                          <th>Size</th>
+                          <td id="videoSize"></td>
+                        </tr>
+                        <tr>
+                          <th>Duration</th>
+                          <td id="videoDuration"></td>
+                        </tr>
+                        <tr>
+                          <th>Recorded On</th>
+                          <td id="videoDate"></td>
+                        </tr>
+                        <tr>
+                          <th>Channel</th>
+                          <td id="videoChannel"></td>
+                        </tr>
+                        <tr>
+                          <th>Description</th>
+                          <td id="videoDescription"></td>
+                        </tr>
+                        <tr>
+                          <th>Camera URL</th>
+                          <td><a href="#" target="_blank" id="videoCameraUrlLink"><span id="videoCameraUrl"></span></a></td>
+                        </tr>
+                        <tr>
+                          <th>NVR Area</th>
+                          <td id="videoNvrArea"></td>
+                        </tr>
+                        <tr>
+                          <th>NVR URL</th>
+                          <td><a href="#" target="_blank" id="videoNvrUrlLink"><span id="videoNvrUrl"></span></a></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+        </div>
+    </div>
+</div>
+</div>
+<!-- <div style="position:fixed;bottom:10px;right:10px;background-color:rgba(17, 30, 78, 0.5);padding:5px;border-radius:5px;color:#fff"><span class=" " >Developed by MIPL</span></div> -->
+<script src="{{ url_for('static', filename='js/dependency/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dependency/jquery-3.7.1.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dependency/dataTables.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/admin/recordings.js') }}"></script>
+</body>
+</html>

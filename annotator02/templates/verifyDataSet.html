@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dataset Verification</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/bootstrap.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/icon.css') }}"
+    />
+    <style>
+      body {
+        background-color: #f5f5f5;
+        height: 100%;
+      }
+      .grid {
+        column-count: 5; /* Adjust for responsiveness */
+        column-gap: 16px;
+      }
+
+      .grid .position-relative {
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 16px;
+        break-inside: avoid;
+      }
+
+      canvas {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+
+      .btn-primary {
+        background-color: black;
+        color: #fff !important;
+        border: none;
+      }
+      .btn-primary:hover,
+      .btn-primary:focus {
+        background-color: black;
+      }
+      .btn-danger span.material-icons:hover {
+        box-shadow: 0 0 6px 1px red;
+        border-radius: 50%;
+      }
+
+      @media (max-width: 1200px) {
+        .grid {
+          column-count: 4;
+        }
+      }
+      @media (max-width: 992px) {
+        .grid {
+          column-count: 3;
+        }
+      }
+      @media (max-width: 768px) {
+        .grid {
+          column-count: 2;
+        }
+      }
+      @media (max-width: 576px) {
+        .grid {
+          column-count: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav
+      class="navbar navbar-expand navbar-dark bg-dark"
+      style="background-color: #000 !important"
+    >
+      <a class="navbar-brand ms-2" href="#">Annotation Tool</a>
+      <div class="collapse navbar-collapse" id="navbarsExample02">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item"><a class="nav-link" href="/index">Home</a></li>
+          <li class="nav-item active">
+            <a class="nav-link" href="/verifyDataSet">Start Training</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container-fluid p-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0 w-100">Dataset Preview</h2>
+        <div class="w-100 d-flex justify-content-end">
+          <button class="btn btn-danger me-2" onclick="deleteSelectedImages()">
+            Delete Selected Images
+          </button>
+          <a href="/training" class="btn btn-primary">Start Training</a>
+        </div>
+      </div>
+      <div id="image-grid" class="grid"></div>
+    </div>
+
+    <div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered"
+        style="width: 1600px"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="previewModalLabel">DataSet Preview</h5>
+            <span type="button" class="material-icons" onclick="closeModal()"
+              >close</span
+            >
+          </div>
+          <div
+            class="modal-body text-center d-flex justify-content-center align-items-center flex-column"
+          >
+            <div class="position-relative d-inline-block">
+              <canvas id="previewCanvas"></canvas>
+              <button
+                class="btn btn-sm btn-danger position-absolute"
+                style="top: 10px; right: 10px; z-index: 10"
+                onclick="deleteCurrentPreviewImage()"
+                title="Delete this image"
+              >
+                <span class="material-icons" style="font-size: 16px"
+                  >delete</span
+                >
+              </button>
+            </div>
+            <div class="mt-3 d-flex justify-content-center align-items-center">
+              <span
+                class="material-icons mx-3"
+                role="button"
+                onclick="showPreviousImage()"
+                >arrow_back_ios</span
+              >
+              <strong>Filename:</strong> <span id="fileNameDisplay"></span>
+              <span
+                class="material-icons mx-3"
+                role="button"
+                onclick="showNextImage()"
+                >arrow_forward_ios</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="toast-container"
+      style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 3000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      "
+    ></div>
+
+    <script src="{{ url_for('static', filename='js/dependency/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/socket.io.min.js') }}"></script>
+    <script>
+      let fileList = [],
+        currentIndex = 0;
+      const FRAME_DIR = "/static/annotated_frames/frames/";
+      const ANN_DIR = "/static/annotated_frames/annotation/";
+      const grid = document.getElementById("image-grid");
+      const selectedImages = new Set();
+      let previewCanvas, previewCtx;
+
+      async function loadDataset() {
+        try {
+          const res = await fetch("/api/list_annotated_images");
+          fileList = await res.json();
+          grid.innerHTML = "";
+          if (fileList.length === 0) {
+            grid.innerHTML =
+              '<h4 class="text-muted w-100 text-center">No images found in dataset.</h4>';
+            return;
+          }
+
+          for (const file of fileList) {
+            const img = new Image();
+            img.src = FRAME_DIR + file;
+            img.dataset.filename = file;
+            img.onload = async () => {
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
+              canvas.width = img.width;
+              canvas.height = img.height;
+              ctx.drawImage(img, 0, 0);
+              canvas.dataset.filename = file;
+
+              try {
+                const annText = await fetch(
+                  ANN_DIR + file.replace(/\.(jpg|jpeg|png)$/i, ".txt")
+                ).then((res) => res.text());
+                for (const line of annText.trim().split("\n")) {
+                  const [label, xStr, yStr, wStr, hStr] = line
+                    .trim()
+                    .split(" ");
+                  const x = parseFloat(xStr);
+                  const y = parseFloat(yStr);
+                  const w = parseFloat(wStr);
+                  const h = parseFloat(hStr);
+
+                  if (![x, y, w, h].some(isNaN)) {
+                    ctx.strokeStyle = "red";
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, w, h);
+                    ctx.fillStyle = "red";
+                    ctx.font = "12px sans-serif";
+                    ctx.fillText(label, x + 4, y + 14);
+                  }
+                }
+              } catch {}
+
+              const wrapper = document.createElement("div");
+              wrapper.className = "position-relative";
+
+              const checkbox = document.createElement("input");
+              checkbox.type = "checkbox";
+              checkbox.className = "form-check-input";
+              checkbox.style =
+                "position:absolute;top:10px;right:10px;z-index:10;";
+              checkbox.dataset.filename = file;
+              checkbox.onchange = (e) => {
+                const name = e.target.dataset.filename;
+                e.target.checked
+                  ? selectedImages.add(name)
+                  : selectedImages.delete(name);
+              };
+
+              canvas.ondblclick = () =>
+                openPreviewModalByIndex(fileList.indexOf(file));
+              wrapper.appendChild(checkbox);
+              wrapper.appendChild(canvas);
+              grid.appendChild(wrapper);
+            };
+          }
+        } catch (e) {
+          showToast("danger", "Failed to load dataset.");
+        }
+      }
+
+      function openPreviewModalByIndex(index) {
+        const file = fileList[index];
+        currentIndex = index;
+        document.getElementById("fileNameDisplay").textContent = file;
+
+        const img = new Image();
+        img.src = FRAME_DIR + file;
+        img.onload = async () => {
+          previewCanvas = document.getElementById("previewCanvas");
+          previewCtx = previewCanvas.getContext("2d");
+          previewCanvas.width = img.width;
+          previewCanvas.height = img.height;
+          previewCtx.clearRect(0, 0, img.width, img.height);
+          previewCtx.drawImage(img, 0, 0);
+
+          try {
+            const text = await fetch(
+              ANN_DIR + file.replace(/\.(jpg|jpeg|png)$/i, ".txt")
+            ).then((r) => r.text());
+
+            for (const line of text.trim().split("\n")) {
+              const [label, xStr, yStr, wStr, hStr] = line.trim().split(" ");
+              const x = parseFloat(xStr);
+              const y = parseFloat(yStr);
+              const w = parseFloat(wStr);
+              const h = parseFloat(hStr);
+
+              if (![x, y, w, h].some(isNaN)) {
+                previewCtx.strokeStyle = "red";
+                previewCtx.lineWidth = 2;
+                previewCtx.strokeRect(x, y, w, h);
+                previewCtx.fillStyle = "red";
+                previewCtx.font = "14px sans-serif";
+                previewCtx.fillText(label, x + 4, y + 16);
+              }
+            }
+          } catch (err) {
+            console.warn("Annotation file could not be processed:", err);
+          }
+
+          if (!window.modalInstance) {
+            window.modalInstance = new bootstrap.Modal(
+              document.getElementById("previewModal")
+            );
+          }
+          window.modalInstance.show();
+        };
+      }
+
+      function closeModal() {
+        bootstrap.Modal.getInstance(
+          document.getElementById("previewModal")
+        ).hide();
+        document
+          .querySelectorAll(".modal-backdrop")
+          .forEach((el) => el.remove());
+        document.body.classList.remove("modal-open");
+        document.body.style = "";
+      }
+
+      async function deleteSelectedImages() {
+        if (!selectedImages.size)
+          return showToast("info", "No images selected.");
+        await fetch("/api/delete_images", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ files: Array.from(selectedImages) }),
+        });
+        showToast("success", "Images deleted.");
+        loadDataset();
+      }
+
+      async function deleteCurrentPreviewImage() {
+        const filename = fileList[currentIndex];
+        if (!confirm(`Delete ${filename}?`)) return;
+
+        await fetch("/api/delete_images", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ files: [filename] }),
+        });
+
+        const targetCanvas = [...grid.querySelectorAll("canvas")].find(
+          (c) => c.dataset.filename === filename
+        );
+        if (targetCanvas?.parentNode) grid.removeChild(targetCanvas.parentNode);
+        fileList.splice(currentIndex, 1);
+
+        if (fileList.length > 0) {
+          openPreviewModalByIndex(Math.min(currentIndex, fileList.length - 1));
+        } else {
+          closeModal();
+          document.getElementById("fileNameDisplay").textContent =
+            "No images left.";
+          previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+          grid.innerHTML =
+            '<h4 class="text-muted w-100 text-center">No images left in dataset.</h4>';
+        }
+      }
+
+      function showToast(type, msg) {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
+        toast.style = "min-width:250px;padding:10px 15px";
+        toast.innerHTML = `<div class="d-flex justify-content-between align-items-center">
+          <div>${msg}</div>
+          <button type="button" class="btn-close btn-close-white ms-2 mb-1" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+      }
+
+      function showPreviousImage() {
+        if (currentIndex > 0) openPreviewModalByIndex(currentIndex - 1);
+        else showToast("info", "You're at the first image.");
+      }
+
+      function showNextImage() {
+        if (currentIndex < fileList.length - 1)
+          openPreviewModalByIndex(currentIndex + 1);
+        else showToast("info", "You're at the last image.");
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (!document.getElementById("previewModal").classList.contains("show"))
+          return;
+        if (e.key === "ArrowLeft") showPreviousImage();
+        else if (e.key === "ArrowRight") showNextImage();
+      });
+
+      loadDataset();
+    </script>
+  </body>
+</html>

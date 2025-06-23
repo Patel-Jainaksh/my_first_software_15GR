@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Vigilnet-login</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dependency/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+
+<body>
+  <div class="p-4 p-md-5 shadow login-container">
+    <div class="text-center mb-4">
+      <h2 class="fw-bold">Login</h2>
+      <p class="text-muted">Please enter your credentials</p>
+    </div>
+
+    <form id="loginForm" method="post" action="/login">
+      <div class="mb-3">
+        <label for="username" class="form-label fw-semibold">Username</label>
+        <input type="text" class="form-control rounded-3" id="username" name="username" required>
+        <div class="invalid-feedback" id="usernameError">Username is required</div>
+      </div>
+
+      <div class="mb-4">
+        <label for="password" class="form-label fw-semibold">Password</label>
+        <input type="password" class="form-control rounded-3" id="password" name="password" required>
+        <div class="invalid-feedback" id="passwordError">Password is required</div>
+      </div>
+
+      <button type="submit" class="btn rounded-3 text-white w-100 login-btn py-2">Login</button>
+    </form>
+    <div class="d-flex justify-content-center align-items-center mt-5">
+      <img src="{{ url_for('static', filename='images/Make_In_India.png') }}" style="height: 100px;width:175px" alt="">
+    </div>
+    <div class="d-flex justify-content-center align-items-center mt-2"><span class="fw-bolder fs-5">Developed by MIPL</span></div>
+  </div>
+  <script src="{{ url_for('static', filename='js/dependency/bootstrap.bundle.min.js') }}"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const loginForm = document.getElementById('loginForm');
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const usernameError = document.getElementById('usernameError');
+      const passwordError = document.getElementById('passwordError');
+
+      // Function to validate form
+      function validateForm() {
+        let isValid = true;
+
+        // Username validation
+        if (usernameInput.value.trim() === '') {
+          usernameInput.classList.add('is-invalid');
+          usernameError.textContent = 'Username is required';
+          isValid = false;
+        } else if (usernameInput.value.trim().length < 3) {
+          usernameInput.classList.add('is-invalid');
+          usernameError.textContent = 'Username must be at least 3 characters';
+          isValid = false;
+        } else {
+          usernameInput.classList.remove('is-invalid');
+          usernameInput.classList.add('is-valid');
+        }
+
+        // Password validation
+        if (passwordInput.value.trim() === '') {
+          passwordInput.classList.add('is-invalid');
+          passwordError.textContent = 'Password is required';
+          isValid = false;
+        } else if (passwordInput.value.trim().length < 6) {
+          passwordInput.classList.add('is-invalid');
+          passwordError.textContent = 'Password must be at least 6 characters';
+          isValid = false;
+        } else {
+          passwordInput.classList.remove('is-invalid');
+          passwordInput.classList.add('is-valid');
+        }
+
+        return isValid;
+      }
+
+      // Input event listeners for real-time validation
+      usernameInput.addEventListener('input', function () {
+        if (usernameInput.value.trim() !== '') {
+          if (usernameInput.value.trim().length >= 3) {
+            usernameInput.classList.remove('is-invalid');
+            usernameInput.classList.add('is-valid');
+          } else {
+            usernameInput.classList.add('is-invalid');
+            usernameInput.classList.remove('is-valid');
+            usernameError.textContent = 'Username must be at least 3 characters';
+          }
+        } else {
+          usernameInput.classList.add('is-invalid');
+          usernameInput.classList.remove('is-valid');
+          usernameError.textContent = 'Username is required';
+        }
+      });
+
+      passwordInput.addEventListener('input', function () {
+        if (passwordInput.value.trim() !== '') {
+          if (passwordInput.value.trim().length >= 6) {
+            passwordInput.classList.remove('is-invalid');
+            passwordInput.classList.add('is-valid');
+          } else {
+            passwordInput.classList.add('is-invalid');
+            passwordInput.classList.remove('is-valid');
+            passwordError.textContent = 'Password must be at least 6 characters';
+          }
+        } else {
+          passwordInput.classList.add('is-invalid');
+          passwordInput.classList.remove('is-valid');
+          passwordError.textContent = 'Password is required';
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

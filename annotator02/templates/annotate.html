@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Annotate</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dependency/icon.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dependency/bootstrap.min.css') }}" />
+  <style>
+    body {
+      background: #f8f9fa;
+      user-select: none;
+    }
+
+    #main-wrapper {
+      max-width: 100%;
+      margin: auto;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    #main-canvas-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    #mainCanvas {
+      width: 100%;
+      height: auto;
+      max-height: 75vh;
+      object-fit: contain;
+      display: block;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    #mainCanvas:hover {
+      cursor: crosshair;
+    }
+
+    .nav-arrow {
+      font-size: 32px;
+      cursor: pointer;
+      color: #0d6efd;
+      padding: 0 15px;
+    }
+
+    #frame-list ul li {
+      cursor: pointer;
+    }
+
+    #frame-list ul li.active {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .active{
+      background-color: #000 !important;
+      border: none;
+    }
+
+    .hover-shadow {
+      transition: box-shadow 0.3s ease;
+      padding: 4px; /* optional: to see box-shadow better */
+      border-radius: 4px; /* optional: for rounded shadow edges */
+    }
+    
+    .hover-shadow:hover {
+      box-shadow: 0 0 6px 2px red;
+    }
+    .btn-primary{
+      background-color: black;
+      color: #fff !important;
+      border: none;
+  }
+  
+  .btn-primary:focus{
+      background-color: black;
+  }
+  
+  .btn-primary:hover{
+      background-color: black;
+  }
+  </style>
+</head>
+  <body>
+    <nav class="navbar navbar-expand navbar-dark bg-dark" style="background-color:#000 !important">
+      <a class="navbar-brand ms-2" href="#">Annotation Tool</a>
+      <div class="collapse navbar-collapse" id="navbarsExample02">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/index">Home</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="/verifyDataSet">Start Training</a>
+          </li>
+        </ul>
+        <a href="/" class="btn btn-danger">Quit Annotating</a>
+      </div>
+    </nav>
+    
+    <div class="d-flex flex-row w-100" style="height: calc(100vh - 56px); overflow: hidden;">
+      <!-- LEFT RESIZABLE SIDEBAR -->
+      <div id="frame-sidebar" style="min-width: 150px; width: 300px; max-width: 500px; overflow-y: auto; resize: horizontal; overflow: auto;" class="bg-white border-end ">
+        <h4 class="p-2 mb-0">Frames</h4>
+        <!-- <hr class="mb-0"> -->
+        <ul id="frameListItems" class="list-group rounded-0"></ul>
+      </div>
+
+      <!-- MIDDLE CONTENT (Canvas + Controls) -->
+      <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-start p-3">
+        <div id="frame-name" class="mb-3 fw-bold fs-5">frame_name.jpg</div>
+
+        <div id="main-canvas-container" class="text-center mb-2 w-100 d-flex justify-content-center">
+          <canvas id="mainCanvas"></canvas>
+        </div>
+
+        <div class="d-flex flex-wrap gap-3 justify-content-center align-items-center w-100 mb-3">
+          <button id="autoAnnotateBtn" class="btn btn-primary" onclick="autoAnnotate()">Auto Annotate</button>
+
+          <div class="d-flex align-items-center gap-2">
+            <label for="confidenceRange" class="form-label mb-0">Confidence:</label>
+            <input type="range" class="form-range" id="confidenceRange" min="0" max="100" step="1" value="50" style="width: 120px;color:#000" />
+            <span id="confidenceValue">50%</span>
+          </div>
+
+          <select id="labelSelect" class="form-select" style="width: auto;">
+            <option value="antelope">Antelope</option>
+            <option value="bear">Bear</option>
+            <option value="boar">Boar</option>
+            <option value="cat">Cat</option>
+            <option value="chimpanzee">Chimpanzee</option>
+            <option value="cow">Cow</option>
+            <option value="deer">Deer</option>
+            <option value="dog">Dog</option>
+            <option value="fox">Fox</option>
+            <option value="wild_boar">Wild Boar</option>
+            <option value="hare">Hare</option>
+            <option value="leopard">Leopard</option>
+            <option value="goat">Goat</option>
+            <option value="owl">Owl</option>
+            <option value="ox">Ox</option>
+            <option value="pig">Pig</option>
+            <option value="reindeer">Reindeer</option>
+            <option value="sheep">Sheep</option>
+            <option value="snake">Snake</option>
+            <option value="wolf">Wolf</option>
+            <option value="person">Person</option>
+          </select>
+
+          <button class="btn btn-primary" onclick="addAnnotation()">Add</button>
+        </div>
+      </div>
+
+      <!-- RIGHT SIDEBAR: Annotation List -->
+      <div style="width: 300px; max-width: 350px;" class="bg-light border-start d-flex flex-column">
+        <h4 class="p-2">Annotations</h4>
+        <ul id="annotationList" class="list-group rounded-0 flex-grow-1 overflow-auto"></ul>
+        <div class="p-2">
+        <button class="btn btn-success w-100 mt-auto mb-3" title="Save annotation for current image !" onclick="saveAnnotations()">Save</button>
+        </div>
+        <!-- <button class="btn btn-secondary w-100 mt-2" onclick="jumpToNextUnannotated()">➡️ Next Unannotated Frame</button> -->
+      </div>
+    </div>
+
+
+    <!-- Toast Message -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999">
+      <div id="saveToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">✅ Annotations saved successfully!</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Config + Scripts -->
+    <script>
+      const RECORDING_ID = {{ recording_id }};
+    </script>
+    
+    <script src="{{ url_for('static', filename='js/annotate.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/bootstrap.bundle.min.js') }}"></script>
+  </body>
+</html>

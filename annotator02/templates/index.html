@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Video Annotation Tool</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/bootstrap.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/icon.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/dataTables.dataTables.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/index.css') }}"
+    />
+  </head>
+  <body>
+    <nav
+      class="navbar navbar-expand navbar-dark bg-dark"
+      style="background-color: #000 !important"
+    >
+      <a class="navbar-brand ms-2" href="#">Annotation Tool</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarsExample02"
+        aria-controls="navbarsExample02"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarsExample02">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/index">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/verifyDataSet">Start Training</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="p-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Manually Recorded Videos</h2>
+        <!-- Add this inside your existing HTML near the "Upload Video" button -->
+        <form
+          id="uploadForm"
+          enctype="multipart/form-data"
+          style="display: none"
+        >
+          <input type="file" id="videoInput" name="video" accept="video/*" />
+        </form>
+        <button
+          class="btn btn-primary"
+          onclick="document.getElementById('videoInput').click()"
+        >
+          Upload Video
+        </button>
+      </div>
+      <div class="conatiner">
+        <div class="row">
+          <div class="col-12">
+            <div class="table-responsive" style="width: 100%">
+              <table
+                id="mytable"
+                class="display"
+                style="width: 100% !important"
+              >
+                <thead>
+                  <tr>
+                    <td>Sr.No</td>
+                    <td>File Path</td>
+                    <td>Duration</td>
+                    <td>Channel</td>
+                    <td>Extract Frames</td>
+                    <td>Action</td>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/dependency/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/jquery-3.7.1.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/dataTables.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+  </body>
+</html>

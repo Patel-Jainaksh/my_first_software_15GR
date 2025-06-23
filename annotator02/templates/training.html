@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Training Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/bootstrap.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dependency/icon.css') }}"
+    />
+
+    <style>
+      body {
+        background-color: #f8f9fa;
+      }
+
+      .log-box {
+        height: 72vh;
+        overflow-y: auto;
+        background-color: #000;
+        color: #0f0;
+        padding: 10px;
+        font-family: monospace;
+        border-radius: 5px;
+      }
+
+      canvas {
+        background: #fff;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav
+      class="navbar navbar-expand navbar-dark bg-dark"
+      style="background-color: #000 !important"
+    >
+      <a class="navbar-brand ms-2" href="#">Annotation Tool</a>
+      <div class="collapse navbar-collapse" id="navbarsExample02">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/index">Home</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="/verifyDataSet">Start Training</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container-fluid p-5">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2>Training Dashboard</h2>
+        <div class="btn-group" role="group">
+          <button class="btn btn-primary" onclick="startTraining('human')">
+            Start Human Training
+          </button>
+          <button class="btn btn-success" onclick="startTraining('animal')">
+            Start Animal Training
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Logs -->
+      <!-- Live Logs -->
+      <div class="card mt-2">
+        <div class="d-flex justify-content-between align-items-center">
+          <h6 class="m-0 p-2">Console</h6>
+          <span id="clearLogsBtn" class="material-icons ms-5 fs-3" role="button">
+            playlist_remove
+          </span>
+        </div>
+        <div class="log-box" id="logBox"></div>
+      </div>
+    </div>
+
+    <div
+      id="toast-container"
+      style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 3000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      "
+    ></div>
+
+    <script src="{{ url_for('static', filename='js/dependency/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dependency/chart.js') }}"></script>
+    <!-- Removed chart canvas -->
+    <!-- Showing message after training completes -->
+    <script>
+      const socket = io();
+      const logBox = document.getElementById("logBox");
+      const humanBtn = document.querySelector("button.btn-primary");
+      const animalBtn = document.querySelector("button.btn-success");
+
+      let trainingCompleted = false;
+
+      // Create and add "Clear Logs" button
+      const clearLogsBtn = document.getElementById("clearLogsBtn");
+
+      clearLogsBtn.onclick = () => {
+        localStorage.removeItem("trainingLogs");
+        logBox.innerHTML = "";
+        showToast("info", "Logs cleared.");
+      };
+
+      function setButtonsDisabled(state) {
+        humanBtn.disabled = state;
+        animalBtn.disabled = state;
+      }
+
+      function appendLog(msg) {
+        const timestamp = new Date().toLocaleString();
+        const isError = /(error|failed|exception)/i.test(msg);
+
+        const entry = { timestamp, msg, isError };
+        const logs = JSON.parse(localStorage.getItem("trainingLogs") || "[]");
+        logs.push(entry);
+        localStorage.setItem("trainingLogs", JSON.stringify(logs));
+
+        // Display immediately
+        const color = isError ? "red" : "white";
+        const entryHTML = `<span style="color:${color}">[${timestamp}] ${msg}</span><br/>`;
+        logBox.innerHTML += entryHTML;
+        logBox.scrollTop = logBox.scrollHeight;
+      }
+
+      function loadLogsFromStorage() {
+        const logs = JSON.parse(localStorage.getItem("trainingLogs") || "[]");
+        logBox.innerHTML = logs
+          .map(({ timestamp, msg, isError }) => {
+            const color = isError ? "red" : "white";
+            return `<span style="color:${color}">[${timestamp}] ${msg}</span><br/>`;
+          })
+          .join("");
+        logBox.scrollTop = logBox.scrollHeight;
+      }
+
+      socket.on("training_log", (data) => {
+        appendLog(data.message);
+        if (/training completed/i.test(data.message) && !trainingCompleted) {
+          trainingCompleted = true;
+          localStorage.setItem("trainingStatus", "completed");
+          setButtonsDisabled(false);
+          showToast("success", "✅ Training completed successfully!");
+        }
+      });
+
+      function startTraining(type) {
+        trainingCompleted = false;
+        localStorage.setItem("trainingStatus", "in_progress");
+        setButtonsDisabled(true);
+        logBox.innerHTML = "";
+        localStorage.removeItem("trainingLogs");
+
+        fetch(`/api/train?type=${type}`, { method: "POST" })
+          .then((res) => res.json())
+          .then((data) => {
+            appendLog(data.message || `${type} training started!`);
+            showToast("info", data.message || `${type} training started!`);
+          })
+          .catch(() => {
+            localStorage.removeItem("trainingStatus");
+            setButtonsDisabled(false);
+            showToast("danger", "🚨 Training failed!");
+          });
+      }
+
+      function showToast(type = "info", message = "This is a toast!") {
+        const toastContainer = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
+        toast.setAttribute("role", "alert");
+        toast.setAttribute("aria-live", "assertive");
+        toast.setAttribute("aria-atomic", "true");
+        toast.style.minWidth = "250px";
+        toast.style.padding = "10px 15px";
+
+        toast.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center">
+            <div>${message}</div>
+            <button type="button" class="btn-close btn-close-white ms-2 mb-1" onclick="this.parentElement.parentElement.remove()"></button>
+          </div>
+        `;
+
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+      }
+
+      window.addEventListener("DOMContentLoaded", async () => {
+        try {
+          loadLogsFromStorage(); // Load logs first
+
+          const res = await fetch("/api/training_status");
+          const { status, type } = await res.json();
+
+          if (status === "in_progress") {
+            setButtonsDisabled(true);
+            showToast("warning", `🔄 ${type} training is in progress...`);
+          } else if (status === "completed") {
+            showToast(
+              "success",
+              `✅ ${type} training was completed previously.`
+            );
+          } else if (status === "failed") {
+            showToast("danger", `❌ ${type} training previously failed.`);
+          }
+        } catch (err) {
+          console.warn("Could not fetch training status");
+        }
+      });
+    </script>
+  </body>
+</html>

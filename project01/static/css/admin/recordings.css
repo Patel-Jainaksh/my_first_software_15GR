@@ -1,0 +1,24 @@
+.video-thumb {
+  width: 100%;
+  /* height: 150px; */
+  object-fit: cover; /* Ensures the video fits neatly in the card */
+  cursor: pointer;
+}
+
+.play-icon {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Perfect centering */
+  font-size: 60px; /* Larger play icon */
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.play-icon:hover {
+  transform: translate(-50%, -50%) scale(1.2); /* Slight zoom on hover */
+}
+
+  

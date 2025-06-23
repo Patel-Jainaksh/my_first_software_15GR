@@ -1,0 +1,13 @@
+.btn-primary{
+    background-color: black;
+    color: #fff !important;
+    border: none;
+}
+
+.btn-primary:focus{
+    background-color: black;
+}
+
+.btn-primary:hover{
+    background-color: black;
+}

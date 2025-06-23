@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ModelRepository/rtdetr-v2-r18d-person-detection" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/annotator02" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/modelRepository/rtdetr-v2-r18d-person-detection/default" vcs="Git" />
+  </component>
+</project>
